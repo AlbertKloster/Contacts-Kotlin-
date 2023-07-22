@@ -2,10 +2,9 @@ package contacts
 
 enum class Actions(val string: String) {
     ADD("add"),
-    REMOVE("remove"),
-    EDIT("edit"),
+    LIST("list"),
+    SEARCH("search"),
     COUNT("count"),
-    INFO("info"),
     EXIT("exit"),
     ;
 

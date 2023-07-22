@@ -3,41 +3,44 @@ package contacts
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+
 class PhoneBookService {
+    private val fileHandler = FileHandler()
     private val phoneBook = PhoneBook()
 
+    fun save() {
+        fileHandler.save(phoneBook)
+    }
+
     fun add() {
+        print("Enter the type (person, organization): ")
         when (RecordTypes.getType(readln())) {
-            RecordTypes.PERSON -> addPerson()
-            RecordTypes.ORGANIZATION -> addOrganization()
+            RecordTypes.PERSON -> add(RecordPerson())
+            RecordTypes.ORGANIZATION -> add(RecordOrganization())
         }
         println("The record added.")
     }
 
-    private fun addPerson() {
-        val person = RecordPerson()
+    private fun add(record: RecordPerson) {
+        setName(record)
+        setSurname(record)
+        setBirthDate(record)
+        setGender(record)
+        setNumber(record)
+        setTimeCreated(record)
+        setTimeLastEdit(record)
 
-        setName(person)
-        setSurname(person)
-        setBirthDate(person)
-        setGender(person)
-        setNumber(person)
-        setTimeCreated(person)
-        setTimeLastEdit(person)
-
-        phoneBook.records.add(person)
+        phoneBook.records.add(record)
     }
 
-    private fun addOrganization() {
-        val organization = RecordOrganization()
+    private fun add(record: RecordOrganization) {
+        setOrganizationName(record)
+        setAddress(record)
+        setNumber(record)
+        setTimeCreated(record)
+        setTimeLastEdit(record)
 
-        setOrganizationName(organization)
-        setAddress(organization)
-        setNumber(organization)
-        setTimeCreated(organization)
-        setTimeLastEdit(organization)
-
-        phoneBook.records.add(organization)
+        phoneBook.records.add(record)
     }
 
     private fun String.isValidPhoneNumber(): Boolean {
@@ -49,38 +52,68 @@ class PhoneBookService {
                 this.matches(noBrackets)
     }
 
-
-    fun remove() {
-        if (phoneBook.records.isEmpty()) {
-            println("No records to remove!")
-            return
+    fun search() {
+        print("Enter search query: ")
+        val query = readln()
+        val resultList = phoneBook.records.filter { record ->
+            if (record is RecordPerson) {
+                record.name.lowercase().contains(query.lowercase()) ||
+                        record.surname.lowercase().contains(query.lowercase()) ||
+                        record.number.contains(query)
+            } else {
+                record as RecordOrganization
+                record.organizationName.lowercase().contains(query.lowercase()) ||
+                        record.number.contains(query)
+            }
+        }
+        for (i in resultList.indices) {
+            val record = resultList[i]
+            if (record is RecordPerson) {
+                println("${i + 1}. ${record.name} ${record.surname}")
+            } else {
+                val castedRecord = record as RecordOrganization
+                println("${i + 1}. ${castedRecord.organizationName}")
+            }
         }
 
-        printList()
-        println("Select a record: > ")
-        phoneBook.records.removeAt(readln().toInt() - 1)
-        println("The record removed!")
-
+        println("\n[search] Enter action ([number], back, again): ")
+        when (val input = readln()) {
+            "back" -> return
+            "again" -> search()
+            else -> {
+                printRecord(phoneBook.records[input.toInt() - 1])
+            }
+        }
     }
 
-    fun edit() {
-        if (phoneBook.records.isEmpty()) {
-            println("No records to edit!")
-            return
+    private fun printRecord(record: Record) {
+        if (record is RecordPerson) printPerson(record)
+        else printOrganization(record as RecordOrganization)
+
+        println("\n[record] Enter action (edit, delete, menu): ")
+        when (readln()) {
+            "edit" -> edit(record)
+            "delete" -> delete(record)
+            "menu" -> return
         }
+    }
 
-        printList()
-        println("Select a record: > ")
-        val record = phoneBook.records[readln().toInt() - 1]
+    private fun delete(record: Record) {
+        phoneBook.records.remove(record)
+        println("The record deleted!")
+        printRecord(record)
+    }
 
+    private fun edit(record: Record) {
         if (record is RecordPerson) {
             editRecordPerson(record)
         } else {
             editRecordOrganization(record)
         }
 
-        println("The record updated!")
+        println("Saved")
 
+        printRecord(record)
     }
 
     private fun editRecordPerson(record: Record) {
@@ -95,20 +128,21 @@ class PhoneBookService {
     }
 
     private fun editRecordOrganization(record: Record) {
-        println("Select a field (address, number): ")
+        println("Select a field (name, address, number): ")
         when (readln()) {
+            "name" -> setOrganizationName(record as RecordOrganization)
             "address" -> setAddress(record as RecordOrganization)
             "number" -> setNumber(record)
         }
     }
 
     private fun setName(record: RecordPerson) {
-        println("Enter name: ")
+        print("Enter name: ")
         record.name = readln()
     }
 
     private fun setSurname(record: RecordPerson) {
-        println("Enter surname: ")
+        print("Enter surname: ")
         record.surname = readln()
     }
 
@@ -145,7 +179,7 @@ class PhoneBookService {
     }
 
     private fun setNumber(record: Record) {
-        println("Enter number: ")
+        print("Enter number: ")
         val input = readln()
         val number = if (input.isValidPhoneNumber()) input else ""
         if (number.isEmpty())
@@ -165,7 +199,7 @@ class PhoneBookService {
         println("The Phone Book has ${phoneBook.records.count()} records.")
     }
 
-    fun info() {
+    fun list() {
         if (phoneBook.records.isEmpty()) {
             println("No records to list!")
             return
@@ -173,12 +207,14 @@ class PhoneBookService {
 
         printList()
 
-        print("Enter index to show info: > ")
-        val record = phoneBook.records[readln().toInt() - 1]
-        if (record is RecordPerson)
-            printPerson(record)
-        else
-            printOrganization(record as RecordOrganization)
+        print("\n[list] Enter action ([number], back): ")
+        val input = readln()
+        if (input == "back") {
+            return
+        } else {
+            val record = phoneBook.records[input.toInt() - 1]
+            printRecord(record)
+        }
 
     }
 

@@ -11,4 +11,8 @@ class RecordPerson(
     number: String = "",
     timeCreated: LocalDateTime? = null,
     timeLastEdit: LocalDateTime? = null
-): Record(number, timeCreated, timeLastEdit)
+): Record(number, timeCreated, timeLastEdit) {
+    override fun toString(): String {
+        return "RecordPerson${0.toChar()}$name${0.toChar()}$surname${0.toChar()}$birth${0.toChar()}$gender${0.toChar()}$number${0.toChar()}$timeCreated${0.toChar()}$timeLastEdit"
+    }
+}

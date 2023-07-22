@@ -1,3 +1,5 @@
 package contacts
 
-data class Record(var name: String, var surname: String, var number: String)
+import java.time.LocalDateTime
+
+open class Record(var number: String = "", var timeCreated: LocalDateTime? = null, var timeLastEdit: LocalDateTime? = null)

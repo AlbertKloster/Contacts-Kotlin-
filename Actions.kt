@@ -5,7 +5,7 @@ enum class Actions(val string: String) {
     REMOVE("remove"),
     EDIT("edit"),
     COUNT("count"),
-    LIST("list"),
+    INFO("info"),
     EXIT("exit"),
     ;
 

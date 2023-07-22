@@ -1,3 +1,3 @@
 package contacts
 
-data class Record(val name: String, val surname: String, val phoneNumber: String)
+data class Record(var name: String, var surname: String, var number: String)
